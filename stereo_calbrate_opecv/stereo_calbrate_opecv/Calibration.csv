@@ -1,0 +1,33 @@
+Project:,t2cal,,,
+StageNum:,14,,,
+,,,,
+Type:, Circle,,,
+Size:,  12*9,,,
+Space:,  8 mm,,,
+Reference:,0,,,
+Method:,2,,,
+Circle Limit:,0.5,,,
+Min Pixel:,15,,,
+Stage Count:,1,,,
+,,,,
+Score:,0.0346577, 像素,,
+DPP:,0.078775,毫米/像素,,
+,,,,
+, Unit,相机0,相机1,
+centerX:,  像素,1057.82,1031.42,
+centerY:,  像素,797.759,793.949,
+focusX:,  像素,4803.75,4770.99,
+focusY:,  像素,4803.98,4769.78,
+focusS:,  像素,0.712068,1.33214,
+kappa1:,,,0.0152701,0.0193449
+kappa2:,,,-0.485781,-0.750924
+kappa3:,,,0,0
+kappa4:,,,0,0
+kappa5:,,,0,0
+kappa6:,,,0,0
+anglAlpha:,   度,0,0.032098,
+angleBeta:,   度,0,-0.4592,
+anglrGamma:,   度,0,0.0830207,
+distanceX:,   毫米,0,182.129,
+distanceY:,   毫米,0,12.2436,
+distanceZ:,   毫米,0,66.1983,
