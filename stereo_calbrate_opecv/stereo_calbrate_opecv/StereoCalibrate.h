@@ -61,7 +61,7 @@ namespace calib {
 		StereoCalibrate(string dir, string ext, StereoCalibrateParams params); //dir时目录，ext是图片文件后缀
 		void start();
 
-		~StereoCalibrate();
+		~StereoCalibrate() = default;
 
 
 	private:
@@ -76,6 +76,7 @@ namespace calib {
 
 		StereoCalibrateParams _params;//配置标定的参数
 		Mat _R, _T, _E, _F, _perViewError; //立体匹配结果
+		double rms;
 	};
 
 	static const string path_sep = "\\";

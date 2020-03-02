@@ -16,8 +16,13 @@ namespace calib {
 
 		cv::Mat stdIn, stdEx, perViewError;
 
-		cv::calibrateCamera(cps.objectPoints, cps.imagePoints, cps.imageSize,
+		double res = cv::calibrateCamera(cps.objectPoints, cps.imagePoints, cps.imageSize,
 			cps.K, cps.D, cps.rvecs, cps.tvecs, stdIn, stdEx, perViewError, cps.single_flag);
+		D(cout <<"返回值 " << res << endl);
+
+		res = cv::sum(perViewError)[0] / perViewError.size().width;
+		D(cout << "计算返回值 " << res << endl);
+
 
 
 		D(cout << "内参" << endl);
@@ -28,6 +33,9 @@ namespace calib {
 
 		D(cout << "重投影误差 每张图" << endl);
 		D(cout << perViewError << endl);
+
+		D(cout << "std INSTRI" << endl);
+		D(cout << stdIn << endl);
 
 		D(cout << endl << endl);
 	}
@@ -95,9 +103,7 @@ namespace calib {
 		}cout << endl;*/
 	}
 
-
-
-	void calibrate_stereo(CameraParameters& cps1, CameraParameters& cps2, 
+	double calibrate_stereo(CameraParameters& cps1, CameraParameters& cps2,
 		Mat& R, Mat& T, Mat& E, Mat& F, Mat& perViewError, StereoCalibrateParams params) {
 
 		assert(cps1.filepaths.size() == cps2.filepaths.size());
@@ -118,9 +124,24 @@ namespace calib {
 
 		get_imagePoints_from_cps(imagePoints1, imagePoints2, cps1, cps2, both_detected);
 
-		//Mat R, T, E, F,perViewError;
-		int flag = CV_CALIB_RATIONAL_MODEL;
-		cv::stereoCalibrate(objectPoints, imagePoints1, imagePoints2,
+
+		int flag = CV_CALIB_RATIONAL_MODEL | CV_CALIB_ZERO_TANGENT_DIST;
+
+		////test
+		//cps1.D = Mat::zeros(Size(14, 1), CV_32F);
+		//cps2.D = Mat::zeros(Size(14, 1),CV_32F);
+
+		////test
+
+		////Mat R, T, E, F,perViewError;
+		//flag |= CV_CALIB_FIX_K1;
+		//flag |= CV_CALIB_FIX_K2;
+		//flag |= CV_CALIB_FIX_K3;
+		//flag |= CV_CALIB_FIX_K4;
+		//flag |= CV_CALIB_FIX_K5;
+		//flag |= CV_CALIB_FIX_K6;
+
+		double res = cv::stereoCalibrate(objectPoints, imagePoints1, imagePoints2,
 			cps1.K, cps1.D, cps2.K, cps2.D, cps1.imageSize,
 			R, T, E, F, perViewError,
 			flag);
@@ -147,13 +168,15 @@ namespace calib {
 
 		D(cout << "两相机检测均成功的图片数量： " << view_num << endl)
 
+
+		return res;
 	}
 
-
 	void prepare_single(CameraParameters& cps, string pattern1, StereoCalibrateParams params) {
-		vector<cv::String> paths1;
-		cv::glob(pattern1, paths1, false);
-		for (auto p : paths1)
+
+		vector<cv::String> paths;
+		cv::glob(pattern1, paths, false);
+		for (auto p : paths)
 			cps.filepaths.push_back(p);
 		std::sort(cps.filepaths.begin(), cps.filepaths.end(), filename_comparator());
 		cps.detected.assign(cps.filepaths.size(), true); //初始设为true,检测失败就将他改为false
@@ -164,25 +187,24 @@ namespace calib {
 
 
 		D(cout << "排序前" << endl);
-		for (auto p : paths1)
+		for (auto p : paths)
 			D(cout << p << endl);
 		D(cout << "排序后" << endl);
 		for (auto p : cps.filepaths)
 			D(cout << p << endl);
-
 		D(cout << "文件数" << cps.filepaths.size() << endl);
 		D(cout << "成功检测数目：" << cps.imagePoints.size() << endl);
 		D(cout << endl << endl);
-
-		auto lambda_true = [](bool x)->bool {return x; };
-		size_t sucess_num_1 = std::count_if(cps.detected.begin(), cps.detected.end(), lambda_true);
 
 	}
 
 
 
-	StereoCalibrate::StereoCalibrate(string dir, string ext = "bmp", StereoCalibrateParams params = StereoCalibrate::createStereoCalibrateParams())
+
+	StereoCalibrate::StereoCalibrate(string dir, string ext = "bmp", 
+		StereoCalibrateParams params = StereoCalibrate::createStereoCalibrateParams())
 		:_dir(dir), _ext(ext), _params(params) {
+
 		//假设文件夹下有1 2 两个子文件夹
 		_sub_dir_1 = _dir + path_sep + "1" + path_sep;
 		_sub_dir_2 = _dir + path_sep + "2" + path_sep;
@@ -196,19 +218,18 @@ namespace calib {
 
 		prepare_single(_cps1, pattern1, _params);
 		prepare_single(_cps2, pattern2, _params);
-
 		calibrate_single(_cps1);
 		calibrate_single(_cps2);
+		rms = calibrate_stereo(_cps1, _cps2, _R, _T, _E, _F, _perViewError, _params);
 
-		calibrate_stereo(_cps1, _cps2, _R, _T, _E, _F, _perViewError, _params);
-
-		if (write_calibration_file() != 0) cout << "写标定文件失败" << endl;
+		if (write_calibration_file() != 0) cout << "写标定文件失败：可能文件被占用" << endl;
 	}
+
 
 
 	int StereoCalibrate::write_calibration_file() {
 		string out_file_path = _dir + path_sep + ".." + path_sep + "RawCalibration.csv";
-		D(cout << "企图输出文件 立体标定结果: " << out_file_path << endl);
+		D(cout << "企图打开文件立体标定结果: " << out_file_path << endl);
 		std::ofstream out(out_file_path);
 
 
@@ -221,9 +242,16 @@ namespace calib {
 			//TODO 旋转向量这里不太明确，其元素是否是旋转角度，而且顺序是存疑的
 			Mat rvec;
 			cv::Rodrigues(_R, rvec); //从旋转矩阵到旋转向量，PMLAB也是输出了旋转向量
+			
+			Mat R;
+			cv::Rodrigues(rvec, R); //从旋转矩阵到旋转向量，PMLAB也是输出了旋转向量
+			cout << R << endl;
+			cout << rvec << endl;
+
 
 			int view_num = _perViewError.size().height;
-			double score = cv::sum(_perViewError)[0] / double(view_num * 2);
+			//double score = cv::sum(_perViewError)[0] / double(view_num * 2);
+			double score = rms; //2020 03 02改成stereocalibrate的返回值
 
 
 
@@ -251,24 +279,14 @@ namespace calib {
 				out << "Ty" << ele_sep << 0 << ele_sep << _T.at<double>(0, 1) << endl;
 				out << "Tz" << ele_sep << 0 << ele_sep << _T.at<double>(0, 2) << endl;//第21行
 			}
+
 			cout << "成功写标定文件：" << out_file_path << endl;
-
-
 			//参考资料 Detailed Description https://docs.opencv.org/3.4.5/d9/d0c/group__calib3d.html
 			out.close();
 			return 0;
 		}
 		else
-		{
 			return 1;
-		}
-	}
-
-
-
-
-	StereoCalibrate::~StereoCalibrate() {
-
 	}
 
 }

@@ -1,5 +1,5 @@
 #include "util.h"
-
+#include <iostream>
 
 using namespace std;
 using namespace cv;
@@ -32,10 +32,13 @@ cv::Size get_imagePoints(vector<string>paths, vector<bool>& flags, vv2p_t &image
 		Mat image = imread(path, IMREAD_COLOR);
 		res = image.size();
 		vector<Point2f> centers;
-		if (findCirclesGrid(image, patternSize, centers, CALIB_CB_SYMMETRIC_GRID, SimpleBlobDetector::create(get_blob_params())))
+		if (findCirclesGrid(image, patternSize, centers, CALIB_CB_SYMMETRIC_GRID, SimpleBlobDetector::create(get_blob_params()))) {
 			imagePoints.push_back(centers);
-		else
+		}
+		else {
 			flags[i] = false;
+			D(std::cout <<path <<":检测失败 " << centers.size() << endl);
+		}
 	}
 	return res;
 }
@@ -51,11 +54,16 @@ SimpleBlobDetector::Params get_blob_params() {
 	params.filterByColor = false;
 	params.filterByConvexity = false;
 	params.filterByInertia = false;
+	params.filterByCircularity = true; //用这个
 
 	//设置使用圆度识别，圆度0.8~1.0
 	params.filterByCircularity = true;
 	params.maxCircularity = 1.0f;
 	params.minCircularity = 0.8f;
+
+
+	//暗颜色
+	params.blobColor = 0;
 
 	//设置使用面积识别
 	params.filterByArea = true;

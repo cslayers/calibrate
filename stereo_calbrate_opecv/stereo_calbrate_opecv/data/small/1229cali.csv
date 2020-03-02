@@ -1,0 +1,33 @@
+Project:,1229cali
+StageNum:,10
+
+Type:, Circle
+Size:,  12*9
+Space:,  1 mm
+Reference:,0
+Method:,2
+Circle Limit:,0.5
+Min Pixel:,12
+Stage Count:,1
+
+Score:,0.0289301, 像素
+DPP:,0.0245168,毫米/像素
+
+, Unit,相机0,相机1
+centerX:,  像素,1003.19,1093.49
+centerY:,  像素,847.232,659.537
+focusX:,  像素,16883.6,16913.2
+focusY:,  像素,16895.1,16901.2
+focusS:,  像素,-20.3939,-15.2838
+kappa1:,,,0.0105012,-0.0546073
+kappa2:,,,5.40917,-0.608443
+kappa3:,,,-4.82749e-10,-4.30767e-09
+kappa4:,,,3.76884e-05,0.00200848
+kappa5:,,,2.50051e-07,3.326e-06
+kappa6:,,,4.82759e-10,4.3074e-09
+anglAlpha:,   度,0,-0.00671668
+angleBeta:,   度,0,0.546004
+anglrGamma:,   度,0,0.00810893
+distanceX:,   毫米,0,-216.324
+distanceY:,   毫米,0,-0.072197
+distanceZ:,   毫米,0,72.1102

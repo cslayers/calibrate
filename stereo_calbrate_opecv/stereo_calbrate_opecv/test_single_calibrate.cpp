@@ -43,8 +43,8 @@ cv::Size getImagePoints(vv2p_t &imagePoints) {
 	Ptr<SimpleBlobDetector> detector = SimpleBlobDetector::create(params);
 
 
-	vector<string> imageFilePaths = getFilePath(R"(.\data\1\)", "*.jpg");
-	//imageFilePaths = getFilePath(R"(.\data\lirui\)","*.bmp");
+	vector<string> imageFilePaths;// = getFilePath(R"(.\data\1\)", "*.jpg");
+	imageFilePaths = getFilePath(R"(.\data\small\calibrate\1\)","*.bmp");
 	//vector<string> imageFilePaths = getFilePath(R"(C:\Users\cslay\Desktop\3d-dic\sample\small\sample20191223\calibrate\)", "a*.bmp");
 	for (auto path : imageFilePaths)
 	{
@@ -110,7 +110,7 @@ int single_calibrate(int argc, char* argv[]) {
 
 	TermCriteria tc(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON);
 
-	calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs,
+	double rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs,
 		stdIn, stdEx, perViewErrors, flag,tc);
 
 
@@ -131,13 +131,7 @@ int single_calibrate(int argc, char* argv[]) {
 	cout << sqrt(sum / project_points.size()) << endl;*/
 
 	
-	double error_avg = 0;
-	for (auto it = perViewErrors.begin(); it != perViewErrors.end(); it++) {
-		error_avg += *it;
-	}
-	error_avg /= perViewErrors.size();
-
-	cout << "平均误差:"<< error_avg  << endl;
+	cout << "平均误差:"<< rms  << endl;
 
 	return 0;
 }
