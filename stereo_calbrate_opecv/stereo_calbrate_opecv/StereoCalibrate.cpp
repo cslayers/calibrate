@@ -18,7 +18,7 @@ namespace calib {
 
 		double res = cv::calibrateCamera(cps.objectPoints, cps.imagePoints, cps.imageSize,
 			cps.K, cps.D, cps.rvecs, cps.tvecs, stdIn, stdEx, perViewError, cps.single_flag);
-		D(cout <<"返回值 " << res << endl);
+		D(cout << "返回值 " << res << endl);
 
 		res = cv::sum(perViewError)[0] / perViewError.size().width;
 		D(cout << "计算返回值 " << res << endl);
@@ -57,8 +57,8 @@ namespace calib {
 				}
 			}
 			else {
-				if (i == 0) cur_checked_1[i] = 0;
-				cur_checked_1[i] = cur_checked_1[i - 1];
+				if (i == 0) cur_checked_1[i] = -1;
+				else cur_checked_1[i] = cur_checked_1[i - 1];
 			}
 		}
 
@@ -71,12 +71,10 @@ namespace calib {
 				}
 			}
 			else {
-				if (i == 0) cur_checked_2[i] = 0;
-				cur_checked_2[i] = cur_checked_2[i - 1];
+				if (i == 0) cur_checked_2[i] = -1;
+				else cur_checked_2[i] = cur_checked_2[i - 1];
 			}
 		}
-
-
 		for (int i = 0; i < both_detected.size(); i++) {
 			if (both_detected[i]) {
 				imagePoints1.push_back(cps1.imagePoints[cur_checked_1[i]]);
@@ -169,7 +167,7 @@ namespace calib {
 		D(cout << "两相机检测均成功的图片数量： " << view_num << endl)
 
 
-		return res;
+			return res;
 	}
 
 	void prepare_single(CameraParameters& cps, string pattern1, StereoCalibrateParams params) {
@@ -201,7 +199,7 @@ namespace calib {
 
 
 
-	StereoCalibrate::StereoCalibrate(string dir, string ext = "bmp", 
+	StereoCalibrate::StereoCalibrate(string dir, string ext = "bmp",
 		StereoCalibrateParams params = StereoCalibrate::createStereoCalibrateParams())
 		:_dir(dir), _ext(ext), _params(params) {
 
@@ -242,7 +240,7 @@ namespace calib {
 			//TODO 旋转向量这里不太明确，其元素是否是旋转角度，而且顺序是存疑的
 			Mat rvec;
 			cv::Rodrigues(_R, rvec); //从旋转矩阵到旋转向量，PMLAB也是输出了旋转向量
-			
+
 			Mat R;
 			cv::Rodrigues(rvec, R); //从旋转矩阵到旋转向量，PMLAB也是输出了旋转向量
 			cout << R << endl;
